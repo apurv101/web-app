@@ -16,8 +16,12 @@
 # production
 /build
 
+# husky
+/.husky/
+
 # misc
 .DS_Store
+Thumbs.db
 *.pem
 
 # debug
