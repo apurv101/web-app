@@ -1,9 +1,9 @@
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter'
+import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
 import type { Metadata } from 'next'
 import { ReactNode } from 'react'
 import theme from '../theme'
-import './globals.css'
 
 export const metadata: Metadata = {
 	title: 'Create Next App',
@@ -18,8 +18,12 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body>
-				<AppRouterCacheProvider>
-					<ThemeProvider theme={theme}>{children}</ThemeProvider>
+				<AppRouterCacheProvider options={{ enableCssLayer: true }}>
+					<ThemeProvider theme={theme}>
+						{/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+						<CssBaseline />
+						{children}
+					</ThemeProvider>
 				</AppRouterCacheProvider>
 			</body>
 		</html>
