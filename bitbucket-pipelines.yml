@@ -1,0 +1,16 @@
+# Bitbucket Pipeline YAML Schema documentation
+# https://support.atlassian.com/bitbucket-cloud/docs/bitbucket-pipelines-configuration-reference/
+
+image: atlassian/default-image:4
+
+pipelines:
+  branches:
+    main:
+      - step:
+          script:
+            - pipe: atlassian/trigger-pipeline:4.1.5
+              variables:
+                BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN
+                REPOSITORY: 'web-app-cdk'
+                REF_TYPE: 'branch'
+                REF_NAME: 'main'
