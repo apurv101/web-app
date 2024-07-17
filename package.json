@@ -11,7 +11,7 @@
 		"lint:fix": "npm run lint -- --fix",
 		"lint:eslint": "eslint --ignore-path .gitignore",
 		"prepare": "husky",
-		"clean": "rm -rf node_modules .next next-env.d.ts .husky"
+		"clean": "rm -rf node_modules .next next-env.d.ts dist .husky"
 	},
 	"dependencies": {
 		"@emotion/cache": "^11.11.0",
