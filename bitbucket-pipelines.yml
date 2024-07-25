@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://bitbucket.org/atlassianlabs/intellij-bitbucket-references-plugin/raw/master/src/main/resources/schemas/bitbucket-pipelines.schema.json
+
 # Bitbucket Pipeline YAML Schema documentation
 # https://support.atlassian.com/bitbucket-cloud/docs/bitbucket-pipelines-configuration-reference/
 
@@ -7,11 +9,12 @@ pipelines:
   branches:
     main:
       - step:
-          name: Trigger web-app-cdk pipeline
+          name: Trigger root-cdk pipeline
           script:
             - pipe: atlassian/trigger-pipeline:4.1.5
               variables:
                 BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN
-                REPOSITORY: 'web-app-cdk'
+                REPOSITORY: 'root-cdk'
                 REF_TYPE: 'branch'
                 REF_NAME: 'main'
+                CUSTOM_PIPELINE_NAME: 'web-app'
