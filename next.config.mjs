@@ -9,7 +9,7 @@ const nextConfig = {
 	// skipTrailingSlashRedirect: true,
 
 	// Optional: Change the output directory `out` -> `dist`
-	distDir: 'dist',
+	distDir: 'assets/dist',
 
 	// temporarily disable optimization until we create a custom loader
 	// https://nextjs.org/docs/app/building-your-application/deploying/static-exports#image-optimization

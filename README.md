@@ -2,11 +2,11 @@
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-It has been configured to build a static site and output it to the `dist` folder so it can be used with AWS CloudFront.
+It has been configured to build a static site and output it to the `assets/dist` folder so it can be used with AWS CloudFront.
 For details on how this is configured and limitations this comes with, see [Next.js static exports](https://nextjs.org/docs/app/building-your-application/deploying/static-exports).
 The primary limitation to be aware of is that the Next.js server features do not work.
 
-The pipeline in this repo simply triggers `web-app-cdk`, which deploys this site to AWS.
+The pipeline in this repo simply triggers `root-cdk`, which deploys this site to AWS.
 
 ## Getting Started
 
