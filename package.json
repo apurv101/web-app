@@ -29,6 +29,7 @@
 		"@types/node": "^20",
 		"@types/react": "^18",
 		"@types/react-dom": "^18",
+		"@typescript-eslint/eslint-plugin": "^7.18.0",
 		"@typescript-eslint/parser": "^7.3.1",
 		"eslint": "^8",
 		"eslint-config-next": "14.2.5",
@@ -49,9 +50,13 @@
 			"node": true
 		},
 		"parser": "@typescript-eslint/parser",
+		"plugins": [
+			"@typescript-eslint"
+		],
 		"extends": [
 			"eslint:recommended",
 			"next/core-web-vitals",
+			"plugin:@typescript-eslint/recommended",
 			"plugin:react/jsx-runtime",
 			"plugin:json/recommended",
 			"plugin:prettier/recommended"
