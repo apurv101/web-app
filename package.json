@@ -3,7 +3,9 @@
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
-		"dev": "next dev",
+		"dev": "npm run dev:local",
+		"dev:local": "next dev",
+		"dev:beta": "API_HOSTNAME_OVERRIDE=api.beta.aimyable.com next dev",
 		"build": "next build",
 		"start": "next start",
 		"test": "jest",
@@ -17,10 +19,12 @@
 		"@emotion/cache": "^11.11.0",
 		"@emotion/react": "^11.11.4",
 		"@emotion/styled": "^11.11.5",
+		"@heygen/streaming-avatar": "^1.0.16",
 		"@mui/icons-material": "^5.16.1",
 		"@mui/material": "^5.16.1",
 		"@mui/material-nextjs": "^5.16.1",
 		"next": "14.2.5",
+		"openai": "^4.53.2",
 		"react": "^18",
 		"react-dom": "^18"
 	},
@@ -43,7 +47,8 @@
 		"lint-staged": "^15.2.2",
 		"prettier": "^3.2.5",
 		"prettier-plugin-organize-imports": "^4.0.0",
-		"typescript": "^5.5.3"
+		"typescript": "^5.5.3",
+		"webpack": "^5.93.0"
 	},
 	"eslintConfig": {
 		"env": {
@@ -66,6 +71,18 @@
 				"error",
 				{
 					"allowEmptyCatch": true
+				}
+			],
+			"@typescript-eslint/no-unused-vars": [
+				"error",
+				{
+					"args": "all",
+					"argsIgnorePattern": "^_",
+					"caughtErrors": "all",
+					"caughtErrorsIgnorePattern": "^_",
+					"destructuredArrayIgnorePattern": "^_",
+					"varsIgnorePattern": "^_",
+					"ignoreRestSiblings": true
 				}
 			]
 		},
