@@ -11,7 +11,7 @@ pipelines:
       - step:
           name: Trigger root-cdk pipeline
           script:
-            - pipe: atlassian/trigger-pipeline:4.1.5
+            - pipe: atlassian/trigger-pipeline:5.8.1
               variables:
                 BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN
                 REPOSITORY: 'root-cdk'
