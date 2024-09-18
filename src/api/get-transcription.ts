@@ -10,7 +10,7 @@ export async function getTranscription(audioFile: File) {
 		method: 'POST',
 		body: formData,
 	})
-	failIfNotOk(res, 'Failed to retrieve avatar stream token')
+	await failIfNotOk(res, 'Failed to transcribe')
 	const transcription = await res.json()
 
 	console.log('transcription:', transcription) // Log the transcription to verify

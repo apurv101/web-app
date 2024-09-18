@@ -50,7 +50,7 @@ export async function failIfNotOk(response: Response, failMessage: string) {
 		let message = failMessage
 		try {
 			const json = await response.json()
-			const resMessage = json instanceof Error ? json.message : json
+			const resMessage = 'message' in json ? json.message : json
 			if (resMessage) {
 				message += ', caused by ' + resMessage
 			}
