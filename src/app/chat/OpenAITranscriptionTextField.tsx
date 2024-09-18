@@ -40,8 +40,9 @@ export default function OpenAITranscriptionTextField({ onTranscription, ...props
 
 	const mediaRecorder = useRef<MediaRecorder | null>(null)
 	const audioChunks = useRef<Blob[]>([])
-	const stopTimeout = useRef<number>(0)
-	const detectSoundAnimFrame = useRef<number>(0)
+	const stopTimeout = useRef<ReturnType<typeof setTimeout>>()
+	const detectSoundAnimFrame = useRef<ReturnType<typeof requestAnimationFrame>>()
+	const soundDetected = useRef<boolean>(false)
 
 	// keep track of transcription requests
 	const currTranscriptionRequestId = useRef<number>(0)
@@ -61,7 +62,7 @@ export default function OpenAITranscriptionTextField({ onTranscription, ...props
 		mediaRecorder.current = new MediaRecorder(stream)
 		mediaRecorder.current.ondataavailable = (event) => {
 			audioChunks.current.push(event.data)
-			if (audioChunks.current.length > 4 && stopTimeout.current) {
+			if (audioChunks.current.length > 4 && soundDetected.current) {
 				transcribeAudio('interim')
 			}
 		}
@@ -78,20 +79,21 @@ export default function OpenAITranscriptionTextField({ onTranscription, ...props
 		const detectSound = () => {
 			analyser.getByteFrequencyData(domainData)
 
-			let soundDetected = false
+			let localSoundDetected = false
 			for (let i = 0; i < bufferLength; i++) {
 				if (domainData[i] > 0) {
-					soundDetected = true
+					localSoundDetected = true
 					break
 				}
 			}
 
 			// if sound detected, reset stop timer
-			if (soundDetected) {
+			if (localSoundDetected) {
+				soundDetected.current = true
 				clearTimeout(stopTimeout.current)
 				stopTimeout.current = setTimeout(() => {
 					mediaRecorder.current?.stop()
-				}, STOP_DELAY) as unknown as number
+				}, STOP_DELAY)
 			}
 
 			detectSoundAnimFrame.current = requestAnimationFrame(detectSound)
@@ -100,15 +102,20 @@ export default function OpenAITranscriptionTextField({ onTranscription, ...props
 		mediaRecorder.current.onstart = () => {
 			// clear any previous recordings
 			audioChunks.current = []
+			soundDetected.current = false
 			detectSoundAnimFrame.current = requestAnimationFrame(detectSound)
 		}
 
 		mediaRecorder.current.onstop = () => {
 			clearTimeout(stopTimeout.current)
-			stopTimeout.current = 0
-			cancelAnimationFrame(detectSoundAnimFrame.current)
-			detectSoundAnimFrame.current = 0
-			transcribeAudio('complete')
+			stopTimeout.current = undefined
+			if (detectSoundAnimFrame.current) {
+				cancelAnimationFrame(detectSoundAnimFrame.current)
+				detectSoundAnimFrame.current = undefined
+			}
+			if (soundDetected.current) {
+				transcribeAudio('complete')
+			}
 		}
 		mediaRecorder.current.start(RECORDING_INTERVAL)
 	}

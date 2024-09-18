@@ -51,9 +51,10 @@ export default function InteractiveAvatar() {
 							onTranscription={(transcription, status) => {
 								// TODO see if the entire text could be included in the transcription
 								if (status == 'complete') {
-									setCompleteTranscription(
-										(completeTranscription) => completeTranscription.trim() + ' ' + transcription,
-									)
+									setCompleteTranscription((completeTranscription) => {
+										const trimmed = completeTranscription.trim()
+										return trimmed ? trimmed + ' ' + transcription : transcription
+									})
 									setInterimTranscription('')
 								} else {
 									setInterimTranscription(transcription)
