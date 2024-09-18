@@ -21,20 +21,15 @@ const spinAnim = keyframes`
   }
 `
 
-export type OpenAITranscriptionTextFieldProps = Omit<TextFieldProps, 'value'> & {
-	value: string
-	onTranscription?: (transcription: string) => void
+export type OpenAITranscriptionTextFieldProps = TextFieldProps & {
+	onTranscription?: (transcription: string, type: 'complete' | 'interim') => void
 }
 
-const STOP_DELAY = 3000
-const RECORDING_INTERVAL = 1000
+const STOP_DELAY = 1000
+const RECORDING_INTERVAL = 500
 const MIN_DECIBELS = -45
 
-export default function OpenAITranscriptionTextField({
-	value,
-	onTranscription,
-	...props
-}: OpenAITranscriptionTextFieldProps) {
+export default function OpenAITranscriptionTextField({ onTranscription, ...props }: OpenAITranscriptionTextFieldProps) {
 	const [recording, setRecording] = useState(false)
 	const [transcribing, setTranscribing] = useState(false)
 
@@ -47,6 +42,10 @@ export default function OpenAITranscriptionTextField({
 	const audioChunks = useRef<Blob[]>([])
 	const stopTimeout = useRef<number>(0)
 	const detectSoundAnimFrame = useRef<number>(0)
+
+	// keep track of transcription requests
+	const currTranscriptionRequestId = useRef<number>(0)
+	const prevTranscriptionRequestId = useRef<number>(0)
 
 	async function startRecording() {
 		setRecording(true)
@@ -62,6 +61,9 @@ export default function OpenAITranscriptionTextField({
 		mediaRecorder.current = new MediaRecorder(stream)
 		mediaRecorder.current.ondataavailable = (event) => {
 			audioChunks.current.push(event.data)
+			if (audioChunks.current.length > 4 && stopTimeout.current) {
+				transcribeAudio('interim')
+			}
 		}
 
 		const audioContext = new AudioContext()
@@ -106,7 +108,7 @@ export default function OpenAITranscriptionTextField({
 			stopTimeout.current = 0
 			cancelAnimationFrame(detectSoundAnimFrame.current)
 			detectSoundAnimFrame.current = 0
-			transcribeAudio()
+			transcribeAudio('complete')
 		}
 		mediaRecorder.current.start(RECORDING_INTERVAL)
 	}
@@ -116,9 +118,14 @@ export default function OpenAITranscriptionTextField({
 		mediaRecorder.current?.stop()
 	}
 
-	async function transcribeAudio() {
+	async function transcribeAudio(status: 'complete' | 'interim') {
 		try {
-			setTranscribing(true)
+			currTranscriptionRequestId.current += 1
+			const localTranscriptionRequestId = currTranscriptionRequestId.current
+
+			if (status === 'complete') {
+				setTranscribing(true)
+			}
 
 			const audioBlob = new Blob(audioChunks.current, {
 				type: 'audio/wav',
@@ -129,13 +136,20 @@ export default function OpenAITranscriptionTextField({
 			})
 
 			const transcription = await getTranscription(audioFile)
-			onTranscription?.(transcription)
+
+			// make sure this is the most recent response
+			if (localTranscriptionRequestId > prevTranscriptionRequestId.current) {
+				prevTranscriptionRequestId.current = localTranscriptionRequestId
+				onTranscription?.(transcription, status)
+			}
 		} catch (error) {
 			console.error('Error transcribing audio:', error)
 		} finally {
-			setTranscribing(false)
-			if (recordingRef.current) {
-				mediaRecorder.current?.start(RECORDING_INTERVAL)
+			if (status === 'complete') {
+				setTranscribing(false)
+				if (recordingRef.current) {
+					mediaRecorder.current?.start(RECORDING_INTERVAL)
+				}
 			}
 		}
 	}
@@ -144,7 +158,6 @@ export default function OpenAITranscriptionTextField({
 
 	return (
 		<TextField
-			value={value}
 			{...props}
 			InputProps={{
 				...props.InputProps,

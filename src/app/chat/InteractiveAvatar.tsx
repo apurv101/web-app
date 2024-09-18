@@ -9,8 +9,14 @@ export default function InteractiveAvatar() {
 	const [isStreaming, setIsStreaming] = useState<HeyGenAvatarControlsProps['isStreaming']>(false)
 	const [isSpeaking, setIsSpeaking] = useState<boolean>(false)
 	const [avatarControlsValue, setAvatarControlsValue] = useState<HeyGenAvatarControlsValue>()
-	const [text, setText] = useState<string>('')
+	const [completeTranscription, setCompleteTranscription] = useState<string>('')
+	const [interimTranscription, setInterimTranscription] = useState<string>('')
 	const avatarStreamRef = useRef<HeyGenAvatarStreamHandle>(null)
+
+	let value = completeTranscription
+	if (interimTranscription) {
+		value += ' ' + interimTranscription
+	}
 
 	return (
 		<Stack direction="row" m={4} spacing={4} justifyItems="stretch">
@@ -32,17 +38,26 @@ export default function InteractiveAvatar() {
 							multiline
 							label="Repeat"
 							placeholder="Type something for the avatar to repeat"
-							value={text}
+							value={value}
 							onSend={() => {
-								avatarStreamRef.current?.speak(text)
-								setText('')
+								avatarStreamRef.current?.speak(completeTranscription)
+								setCompleteTranscription('')
+								setInterimTranscription('')
 							}}
 							onChange={(event) => {
-								setText(event.target.value)
+								setCompleteTranscription(event.target.value)
+								setInterimTranscription('')
 							}}
-							onTranscription={(transcription) => {
+							onTranscription={(transcription, status) => {
 								// TODO see if the entire text could be included in the transcription
-								setText((text) => text.trim() + ' ' + transcription)
+								if (status == 'complete') {
+									setCompleteTranscription(
+										(completeTranscription) => completeTranscription.trim() + ' ' + transcription,
+									)
+									setInterimTranscription('')
+								} else {
+									setInterimTranscription(transcription)
+								}
 							}}
 							disabled={!isStreaming || isSpeaking}
 						/>
