@@ -41,6 +41,7 @@ export const api = {
 	},
 	paths: {
 		getAvatarStreamToken: `${tsLambdasUrl}/avatar-stream-token`,
+		getChat: `${tsLambdasUrl}/chat`,
 		getTranscription: `${tsLambdasUrl}/transcription`,
 	},
 } as const

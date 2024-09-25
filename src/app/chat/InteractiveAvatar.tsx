@@ -1,3 +1,4 @@
+import useChat from '@/hooks/useChat'
 import { Box, Card, CardActions, CardContent, Divider } from '@mui/material'
 import Stack from '@mui/material/Stack'
 import { useRef, useState } from 'react'
@@ -12,6 +13,9 @@ export default function InteractiveAvatar() {
 	const [completeTranscription, setCompleteTranscription] = useState<string>('')
 	const [interimTranscription, setInterimTranscription] = useState<string>('')
 	const avatarStreamRef = useRef<HeyGenAvatarStreamHandle>(null)
+	const [avatarResponses, setAvatarResponses] = useState<string[]>([])
+
+	const chat = useChat()
 
 	let value = completeTranscription
 	if (interimTranscription) {
@@ -40,7 +44,10 @@ export default function InteractiveAvatar() {
 							placeholder="Type something for the avatar to repeat"
 							value={value}
 							onSend={() => {
-								avatarStreamRef.current?.speak(completeTranscription)
+								chat.send(completeTranscription).then((messages) => {
+									avatarStreamRef.current?.speak(messages.join('\n'))
+									setAvatarResponses(messages)
+								})
 								setCompleteTranscription('')
 								setInterimTranscription('')
 							}}
@@ -62,6 +69,20 @@ export default function InteractiveAvatar() {
 							}}
 							disabled={!isStreaming || isSpeaking}
 						/>
+
+						{avatarResponses.map((avatarResponse, index) => (
+							<Box
+								sx={{
+									border: 'black 1px solid',
+									borderRadius: '5px',
+									p: 1,
+									m: 1,
+								}}
+								key={index}
+							>
+								{avatarResponse}
+							</Box>
+						))}
 					</Stack>
 				</CardActions>
 			</Card>
