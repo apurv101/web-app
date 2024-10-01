@@ -5,7 +5,7 @@ import { ThemeProvider } from '@mui/material/styles'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { ReactNode } from 'react'
-import aimyableLogo from '../../public/aimyable-logo.png'
+import aimyableLogo from '../../public/aimyable-logo.svg'
 import theme from '../theme'
 
 export const metadata: Metadata = {
