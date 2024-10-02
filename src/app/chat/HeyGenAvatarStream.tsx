@@ -3,12 +3,12 @@ import { Configuration, NewSessionData, StreamingAvatarApi } from '@heygen/strea
 import { CircularProgress } from '@mui/material'
 import { Dispatch, forwardRef, SetStateAction, useEffect, useImperativeHandle, useRef, useState } from 'react'
 
-export interface HeyGenAvatarStreamHandle {
+export type HeyGenAvatarStreamHandle = {
 	speak: (dialog: string) => Promise<void>
 	interrupt: () => Promise<void>
 }
 
-export interface HeyGenAvatarStreamProps {
+export type HeyGenAvatarStreamProps = {
 	avatarId?: string
 	voiceId?: string
 	isStreaming?: boolean
