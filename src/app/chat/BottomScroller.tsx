@@ -63,7 +63,11 @@ export function BottomScroller({ heightDeps = [], children }: BottomScrollerProp
 			scrollingToBottomRef.current = true
 			scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' })
 		}
-	}, [...heightDeps, scrollerRef.current?.scrollHeight])
+	}, [
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		...heightDeps,
+		scrollerRef.current?.scrollHeight,
+	])
 
 	// when we finish scrolling to the bottom, we recalculate the loader height
 	// hoping it will eventually disapear entirely

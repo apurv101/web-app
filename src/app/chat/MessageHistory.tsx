@@ -55,11 +55,7 @@ export default function MessageHistory({ messages }: MessageHistoryProps) {
 										m.content
 									) : (
 										// TODO handle data responses more gracefully
-										<>
-											{(m.data as any).description}
-											<br />
-											<pre className={'bg-gray-200'}>{JSON.stringify(m.data, null, 2)}</pre>
-										</>
+										<pre className={'bg-gray-200'}>{JSON.stringify(m.data, null, 2)}</pre>
 									)}
 								</Card>
 							</Box>

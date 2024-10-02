@@ -179,7 +179,7 @@ export default function HeyGenAvatarControls({
 					id="avatarIdField"
 					freeSolo
 					value={AVATAR_MAP.get(value?.avatarId ?? '') ?? value}
-					onChange={(e, newAvatarId) => {
+					onChange={(_event, newAvatarId) => {
 						onChange?.((value) =>
 							Object.assign({}, value, {
 								avatarId: newAvatarId,
@@ -204,7 +204,7 @@ export default function HeyGenAvatarControls({
 					id="voiceIdField"
 					freeSolo
 					value={VOICE_MAP.get(value?.voiceId ?? '') ?? value}
-					onChange={(e, newVoiceId) => {
+					onChange={(_event, newVoiceId) => {
 						onChange?.((value) =>
 							Object.assign({}, value, {
 								voiceId: newVoiceId,

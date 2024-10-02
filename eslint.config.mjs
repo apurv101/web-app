@@ -29,7 +29,7 @@ export default tseslint.config(
 	{
 		files: ['**/*.{ts,tsx}'],
 		extends: [
-			...mapName('TypeScript-recommended', tseslint.configs.recommendedTypeChecked),
+			...mapName('TypeScript-recommended', tseslint.configs.recommended),
 			// ...mapName('TypeScript-strict', tseslint.configs.strictTypeChecked),
 			// ...mapName('TypeScript-stylistic', tseslint.configs.stylisticTypeChecked),
 		],
@@ -38,6 +38,22 @@ export default tseslint.config(
 				projectService: true,
 				tsconfigRootDir: __dirname, // use import.meta.dirname after updating to Node 20+
 			},
+		},
+		rules: {
+			// '@typescript-eslint/no-unsafe-assignment': 'off',
+			// '@typescript-eslint/no-unsafe-member-access': 'off',
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{
+					args: 'all',
+					argsIgnorePattern: '^_',
+					caughtErrors: 'all',
+					caughtErrorsIgnorePattern: '^_',
+					destructuredArrayIgnorePattern: '^_',
+					varsIgnorePattern: '^_',
+					ignoreRestSiblings: true,
+				},
+			],
 		},
 	},
 	// TODO determine if we should re-add the custom rules

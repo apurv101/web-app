@@ -41,6 +41,7 @@ export default function InteractiveAvatar() {
 							// 	setAvatarResponses(messages)
 							// })
 						}}
+						disabled={isSpeaking}
 					/>
 				</CardActions>
 			</Card>
