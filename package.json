@@ -16,6 +16,7 @@
 		"clean": "rm -rf node_modules .next next-env.d.ts .husky assets"
 	},
 	"dependencies": {
+		"@ai-sdk/openai": "^0.0.62",
 		"@emotion/cache": "^11.11.0",
 		"@emotion/react": "^11.11.4",
 		"@emotion/styled": "^11.11.5",
@@ -23,10 +24,12 @@
 		"@mui/icons-material": "^5.16.1",
 		"@mui/material": "^5.16.1",
 		"@mui/material-nextjs": "^5.16.1",
+		"ai": "^3.4.3",
 		"next": "14.2.5",
 		"openai": "^4.53.2",
 		"react": "^18",
-		"react-dom": "^18"
+		"react-dom": "^18",
+		"zod": "^3.23.8"
 	},
 	"devDependencies": {
 		"@types/jest": "^29.5.12",

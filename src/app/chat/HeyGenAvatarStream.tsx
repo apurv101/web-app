@@ -1,4 +1,4 @@
-import { getAvatarStreamToken } from '@/api/get-avatar-stream-token'
+import { getAvatarStreamToken } from '@/app/api/getAvatarStreamToken'
 import { Configuration, NewSessionData, StreamingAvatarApi } from '@heygen/streaming-avatar'
 import { CircularProgress } from '@mui/material'
 import { Dispatch, forwardRef, SetStateAction, useEffect, useImperativeHandle, useRef, useState } from 'react'

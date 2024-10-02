@@ -1,4 +1,4 @@
-import { getTranscription } from '@/api/get-transcription'
+import { getTranscription } from '@/app/api/transcribe/getTranscription'
 import { keyframes } from '@emotion/react'
 import GraphicEqIcon from '@mui/icons-material/GraphicEq'
 import MicIcon from '@mui/icons-material/Mic'
