@@ -5,7 +5,7 @@ export async function getAvatarStreamToken() {
 
 	if (!apiKeyHeyGen) {
 		console.error('Failed to retrieve API key')
-		throw 'Failed to retrieve API key'
+		throw new Error('Failed to retrieve API key')
 	}
 
 	try {
@@ -15,10 +15,25 @@ export async function getAvatarStreamToken() {
 				'x-api-key': apiKeyHeyGen,
 			},
 		})
-		const json = await res.json()
+		const json: unknown = await res.json()
+		if (!isValidResponse(json)) {
+			throw new Error(`Invalid resopnse from HeyGen: ${String(json)}`)
+		}
 		return json.data.token
 	} catch (error) {
 		console.error('Error retrieving access token:', error)
-		throw 'Error retrieving access token'
+		throw new Error('Error retrieving access token')
 	}
+}
+
+type ValidResponse = {
+	data: {
+		token: string
+	}
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isValidResponse(resp: any): resp is ValidResponse {
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+	return typeof resp?.data?.token === 'string'
 }

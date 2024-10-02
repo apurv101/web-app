@@ -63,7 +63,7 @@ export default function OpenAITranscriptionTextField({ onTranscription, ...props
 		mediaRecorder.current.ondataavailable = (event) => {
 			audioChunks.current.push(event.data)
 			if (audioChunks.current.length > 4 && soundDetected.current) {
-				transcribeAudio('interim')
+				void transcribeAudio('interim')
 			}
 		}
 
@@ -114,7 +114,7 @@ export default function OpenAITranscriptionTextField({ onTranscription, ...props
 				detectSoundAnimFrame.current = undefined
 			}
 			if (soundDetected.current) {
-				transcribeAudio('complete')
+				void transcribeAudio('complete')
 			}
 		}
 		mediaRecorder.current.start(RECORDING_INTERVAL)

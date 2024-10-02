@@ -236,7 +236,7 @@ export default function HeyGenAvatarControls({
 					</Button>
 				)}
 
-				<Button size="medium" fullWidth onClick={() => avatarStreamRef.current?.interrupt()} variant="outlined">
+				<Button size="medium" fullWidth onClick={() => void avatarStreamRef.current?.interrupt()} variant="outlined">
 					Interrupt task
 				</Button>
 			</Stack>

@@ -31,7 +31,7 @@ export default function InteractiveAvatar() {
 						status={status}
 						messages={messages}
 						onSend={(value) => {
-							append({
+							void append({
 								role: 'user',
 								content: value,
 							})

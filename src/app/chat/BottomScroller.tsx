@@ -44,9 +44,9 @@ export function BottomScroller({ heightDeps = [], children }: BottomScrollerProp
 		const onScroll = () => {
 			setScrollerAtBottom(isScrollerAtBottom(scroller))
 		}
-		scroller?.addEventListener('scroll', onScroll)
+		scroller.addEventListener('scroll', onScroll)
 		return () => {
-			scroller?.removeEventListener('scroll', onScroll)
+			scroller.removeEventListener('scroll', onScroll)
 		}
 	}, [])
 
@@ -86,7 +86,7 @@ export function BottomScroller({ heightDeps = [], children }: BottomScrollerProp
 		if (currScrollerAtBottom) {
 			scrollingToBottomRef.current = false
 			const newLoaderHeight = Math.max(0, scroller.clientHeight - scrollerContent.clientHeight)
-			setLoaderHeight(`${newLoaderHeight}px`)
+			setLoaderHeight(`${newLoaderHeight.toString()}px`)
 		}
 	}, [scrollerAtBottom])
 

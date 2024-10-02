@@ -9,6 +9,9 @@ export async function getTranscription(audioFile: File) {
 		body: formData,
 	})
 
-	const data = await response.json()
+	const data: unknown = await response.json()
+	if (typeof data !== 'string') {
+		throw new Error(`Expected transcription response to be a string, instead found ${typeof data}`)
+	}
 	return data
 }

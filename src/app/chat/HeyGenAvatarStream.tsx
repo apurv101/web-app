@@ -90,13 +90,13 @@ export default forwardRef<HeyGenAvatarStreamHandle, HeyGenAvatarStreamProps>(fun
 		}
 
 		if (isStreaming) {
-			startSession()
+			void startSession()
 		} else {
-			endSession()
+			void endSession()
 		}
 
 		return () => {
-			endSession()
+			void endSession()
 		}
 	}, [avatarId, voiceId, isStreaming])
 
@@ -135,7 +135,7 @@ export default forwardRef<HeyGenAvatarStreamHandle, HeyGenAvatarStreamProps>(fun
 	useEffect(() => {
 		if (stream && videoRef.current) {
 			videoRef.current.onloadedmetadata = () => {
-				videoRef.current?.play()
+				void videoRef.current?.play()
 			}
 			videoRef.current.srcObject = stream
 		}

@@ -3,17 +3,17 @@ import OpenAI from 'openai'
 
 export async function POST(request: NextRequest) {
 	const formData = await request.formData()
-	const audioFile = formData.get('audioFile') as File
+	const audioFile = formData.get('audioFile')
 
-	if (!audioFile) {
-		throw 'No audio file received'
+	if (!(audioFile instanceof File)) {
+		return NextResponse.json({ message: 'Invalid request: No audio file received' }, { status: 400 })
 	}
 
 	const apiKeyOpenAI = process.env.API_KEY_OPEN_AI
 
 	if (!apiKeyOpenAI) {
 		console.error('Failed to retrieve API key')
-		throw 'Failed to retrieve API key'
+		throw new Error('Failed to retrieve API key')
 	}
 
 	const openai = new OpenAI({
@@ -32,6 +32,6 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json(response.text)
 	} catch (error) {
 		console.error('Error transcribing audio:', error)
-		throw 'Error transcribing audio'
+		throw new Error('Error transcribing audio')
 	}
 }
