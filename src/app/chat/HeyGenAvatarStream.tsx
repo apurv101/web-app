@@ -135,7 +135,7 @@ export default forwardRef<HeyGenAvatarStreamHandle, HeyGenAvatarStreamProps>(fun
 	useEffect(() => {
 		if (stream && videoRef.current) {
 			videoRef.current.onloadedmetadata = () => {
-				videoRef.current!.play()
+				videoRef.current?.play()
 			}
 			videoRef.current.srcObject = stream
 		}
