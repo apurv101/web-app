@@ -1,0 +1,4 @@
+# Next.js reformats this file whenever it runs.
+# The formatting does not match Prettier, so it gets reformatted again on save.
+# We need to ignore this file to prevent unnecessary changes.
+/tsconfig.json
