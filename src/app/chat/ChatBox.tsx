@@ -50,7 +50,7 @@ export function ChatBox({ status, messages, disabled, onSend }: ChatBoxProps) {
 						setInterimTranscription(transcription)
 					}
 				}}
-				disabled={disabled || status !== 'awaiting_message'}
+				disabled={!!disabled || status !== 'awaiting_message'}
 			/>
 		</Stack>
 	)

@@ -177,7 +177,7 @@ export default function OpenAITranscriptionTextField({ onTranscription, ...props
 										aria-label={micIconButtonLabel}
 										onClick={!recording ? startRecording : stopRecording}
 										edge="end"
-										disabled={props.disabled || transcribing}
+										disabled={!!props.disabled || transcribing}
 									>
 										{transcribing ? (
 											<CircularProgress size={24} />

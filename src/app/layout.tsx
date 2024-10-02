@@ -3,7 +3,7 @@ import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter'
 import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
 import type { Metadata } from 'next'
-import Image from 'next/image'
+import Image, { StaticImageData } from 'next/image'
 import { ReactNode } from 'react'
 import aimyableLogo from '../../public/aimyable-logo.svg'
 import theme from '../theme'
@@ -28,7 +28,7 @@ export default function RootLayout({
 
 						<AppBar position="static">
 							<Toolbar variant="regular" sx={{ justifyContent: 'center', py: 2 }}>
-								<Image src={aimyableLogo} alt="Aimyable Logo" height={50} />
+								<Image src={aimyableLogo as StaticImageData} alt="Aimyable Logo" height={50} />
 							</Toolbar>
 						</AppBar>
 

@@ -41,7 +41,7 @@ export default function InteractiveAvatarTextField({
 									aria-label={sendIconButtonLabel}
 									onClick={handleSend}
 									edge="end"
-									disabled={props.disabled || sendDisabled}
+									disabled={!!props.disabled || sendDisabled}
 								>
 									<SendIcon />
 								</IconButton>

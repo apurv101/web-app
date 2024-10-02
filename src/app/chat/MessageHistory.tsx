@@ -1,6 +1,7 @@
 import aimyableIcon from '@/../public/aimyable-icon.svg'
 import { Avatar, Box, Card, Stack, Typography } from '@mui/material'
 import { CreateMessage, Message } from 'ai'
+import { StaticImageData } from 'next/image'
 import { BottomScroller } from './BottomScroller'
 
 export type MessageHistoryProps = {
@@ -40,7 +41,7 @@ export default function MessageHistory({ messages }: MessageHistoryProps) {
 								{!isUser && (
 									<Avatar
 										sx={{ gridArea: 'avatar', border: (theme) => `solid 1px ${theme.palette.secondary.main}` }}
-										src={aimyableIcon.src}
+										src={(aimyableIcon as StaticImageData).src}
 									></Avatar>
 								)}
 								<Card
