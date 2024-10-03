@@ -9,9 +9,8 @@
 		"build": "next build",
 		"start": "next start",
 		"test": "jest",
-		"lint": "npm run lint:eslint -- '**/*.{js,jsx,ts,tsx,json}'",
-		"lint:fix": "npm run lint -- --fix",
-		"lint:eslint": "eslint",
+		"lint": "eslint",
+		"lint:fix": "eslint --fix",
 		"prepare": "husky",
 		"clean": "rm -rf node_modules .next next-env.d.ts .husky assets"
 	},
@@ -72,8 +71,8 @@
 		}
 	},
 	"lint-staged": {
-		"**/*.{js,jsx,ts,tsx,json}": [
-			"npm run lint:eslint -- --fix"
+		"**/*": [
+			"eslint --fix"
 		]
 	}
 }
