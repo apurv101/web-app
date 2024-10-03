@@ -8,7 +8,7 @@ import HeyGenAvatarStream, { HeyGenAvatarStreamHandle } from './HeyGenAvatarStre
 
 export default function InteractiveAvatar() {
 	const [isStreaming, setIsStreaming] = useState<HeyGenAvatarControlsProps['isStreaming']>(false)
-	const [isSpeaking, setIsSpeaking] = useState<boolean>(false)
+	const [isAvatarTalking, setIsAvatarTalking] = useState<boolean>(false)
 	const [avatarControlsValue, setAvatarControlsValue] = useState<HeyGenAvatarControlsValue>({
 		avatarId: '',
 		voiceId: '',
@@ -42,7 +42,7 @@ export default function InteractiveAvatar() {
 					avatarId={avatarControlsValue.avatarId}
 					voiceId={avatarControlsValue.voiceId}
 					isStreaming={isStreaming}
-					setIsSpeaking={setIsSpeaking}
+					setIsAvatarTalking={setIsAvatarTalking}
 				/>
 			</Box>
 
@@ -67,7 +67,7 @@ export default function InteractiveAvatar() {
 								content: value,
 							})
 						}}
-						disabled={isSpeaking}
+						disabled={isAvatarTalking}
 					/>
 				</CardActions>
 			</Card>

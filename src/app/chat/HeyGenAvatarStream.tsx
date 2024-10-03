@@ -1,7 +1,17 @@
 import { getAvatarStreamToken } from '@/app/api/getAvatarStreamToken'
-import { Configuration, NewSessionData, StreamingAvatarApi } from '@heygen/streaming-avatar'
+import StreamingAvatar, { AvatarQuality, StreamingEvents, TaskType, VoiceEmotion } from '@heygen/streaming-avatar'
+// import { Configuration, NewSessionData, StreamingAvatar } from '@heygen/streaming-avatar'
 import { CircularProgress } from '@mui/material'
-import { Dispatch, forwardRef, SetStateAction, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import {
+	Dispatch,
+	forwardRef,
+	SetStateAction,
+	useCallback,
+	useEffect,
+	useImperativeHandle,
+	useRef,
+	useState,
+} from 'react'
 
 export type HeyGenAvatarStreamHandle = {
 	speak: (dialog: string) => Promise<void>
@@ -12,83 +22,89 @@ export type HeyGenAvatarStreamProps = {
 	avatarId?: string
 	voiceId?: string
 	isStreaming?: boolean
-	setIsSpeaking?: Dispatch<SetStateAction<boolean>>
+	setIsAvatarTalking?: Dispatch<SetStateAction<boolean>>
+	setIsUserTalking?: Dispatch<SetStateAction<boolean>>
 }
 
 export default forwardRef<HeyGenAvatarStreamHandle, HeyGenAvatarStreamProps>(function HeyGenAvatarStream(
-	{ avatarId, voiceId, isStreaming, setIsSpeaking }: HeyGenAvatarStreamProps,
+	{ avatarId, voiceId, isStreaming, setIsAvatarTalking, setIsUserTalking }: HeyGenAvatarStreamProps,
 	ref,
 ) {
-	const [isLoading, setIsLoading] = useState(false)
+	const [isLoadingSession, setIsLoadingSession] = useState(false)
+	const [_isLoadingRepeat, setIsLoadingRepeat] = useState(false)
 	const [stream, setStream] = useState<MediaStream>()
+
 	const videoRef = useRef<HTMLVideoElement>(null)
-	const avatarRef = useRef<StreamingAvatarApi | null>(null)
-	const sessionDataRef = useRef<NewSessionData | null>(null)
-	const initializedRef = useRef<boolean>(false)
+	const avatarRef = useRef<StreamingAvatar | null>(null)
 
 	// TODO correctly restart session when avatarId or voiceId change
+
+	const endSession = useCallback(async () => {
+		await avatarRef.current?.stopAvatar()
+		setStream(undefined)
+	}, [])
+
+	const startSession = useCallback(async () => {
+		if (!avatarId) {
+			throw new Error('avatarId is required to start a session')
+		}
+
+		setIsLoadingSession(true)
+		const newToken = await getAvatarStreamToken() // TODO should an error return an empty string?
+
+		// TODO does any existing stream get killed when a new one is created? Like when avatarId changes?
+		avatarRef.current = new StreamingAvatar({
+			token: newToken,
+		})
+		avatarRef.current.on(StreamingEvents.STREAM_READY, (event: unknown) => {
+			if (typeof event === 'object' && event !== null && 'detail' in event && event.detail instanceof MediaStream) {
+				console.log('Stream ready:', event.detail)
+				setStream(event.detail)
+			} else {
+				throw new Error(`Invalid event type "${typeof event}". Expected { detail: MediaStream }`)
+			}
+		})
+		avatarRef.current.on(StreamingEvents.STREAM_DISCONNECTED, () => {
+			console.log('Stream disconnected')
+			void endSession()
+		})
+		avatarRef.current.on(StreamingEvents.AVATAR_START_TALKING, (event) => {
+			console.log('Avatar started talking:', event)
+			setIsAvatarTalking?.(true)
+		})
+		avatarRef.current.on(StreamingEvents.AVATAR_STOP_TALKING, (event) => {
+			console.log('Avatar stopped talking:', event)
+			setIsAvatarTalking?.(false)
+		})
+		avatarRef.current.on(StreamingEvents.USER_START, (event) => {
+			console.log('User started talking:', event)
+			setIsUserTalking?.(true)
+		})
+		avatarRef.current.on(StreamingEvents.USER_STOP, (event) => {
+			console.log('User stopped talking:', event)
+			setIsUserTalking?.(false)
+		})
+
+		try {
+			await avatarRef.current.createStartAvatar({
+				quality: AvatarQuality.High,
+				avatarName: avatarId,
+				voice: {
+					voiceId,
+					rate: 1.5, // 0.5 ~ 1.5
+					emotion: VoiceEmotion.EXCITED,
+				},
+			})
+		} catch (error) {
+			console.error('Error starting avatar session:', error)
+		} finally {
+			setIsLoadingSession(false)
+		}
+	}, [avatarId, voiceId, endSession, setIsAvatarTalking, setIsUserTalking])
+
+	// start and stop the stream via prop
+	// stop stream on dismount
 	useEffect(() => {
-		async function updateToken() {
-			const newToken = await getAvatarStreamToken()
-			console.log('Initializing HeyGen avatar stream with Access Token:', newToken)
-			avatarRef.current = new StreamingAvatarApi(new Configuration({ accessToken: newToken, jitterBuffer: 200 }))
-
-			const startTalkCallback = (event: Event) => {
-				console.log('Avatar started talking', event)
-			}
-
-			const stopTalkCallback = (event: Event) => {
-				console.log('Avatar stopped talking', event)
-			}
-
-			console.log('Adding event handlers:', avatarRef.current)
-			avatarRef.current.addEventHandler('avatar_start_talking', startTalkCallback)
-			avatarRef.current.addEventHandler('avatar_stop_talking', stopTalkCallback)
-
-			initializedRef.current = true
-		}
-
-		async function startSession() {
-			setIsLoading(true)
-			try {
-				await updateToken()
-				if (!initializedRef.current || !avatarRef.current) {
-					console.debug(`Avatar API not initialized`)
-					return
-				}
-				sessionDataRef.current = await avatarRef.current.createStartAvatar(
-					{
-						newSessionRequest: {
-							quality: 'high',
-							avatarName: avatarId,
-							voice: { voiceId },
-						},
-					},
-					console.debug,
-				)
-				setStream(avatarRef.current.mediaStream)
-			} catch (error) {
-				console.error('Error starting avatar session:', error)
-				console.debug(
-					`There was an error starting the session. ${voiceId ? 'This custom voice ID may not be supported.' : ''}`,
-				)
-			} finally {
-				setIsLoading(false)
-			}
-		}
-
-		async function endSession() {
-			if (!initializedRef.current || !avatarRef.current) {
-				console.debug(`Avatar API not initialized`)
-				return
-			}
-			await avatarRef.current.stopAvatar(
-				{ stopSessionRequest: { sessionId: sessionDataRef.current?.sessionId } },
-				console.debug,
-			)
-			setStream(undefined)
-		}
-
 		if (isStreaming) {
 			void startSession()
 		} else {
@@ -98,40 +114,9 @@ export default forwardRef<HeyGenAvatarStreamHandle, HeyGenAvatarStreamProps>(fun
 		return () => {
 			void endSession()
 		}
-	}, [avatarId, voiceId, isStreaming])
+	}, [isStreaming, startSession, endSession])
 
-	useImperativeHandle(
-		ref,
-		() => ({
-			speak: async (dialog: string) => {
-				if (!initializedRef.current || !avatarRef.current) {
-					console.debug(`Avatar API not initialized`)
-					return
-				}
-				setIsSpeaking?.(true)
-				try {
-					await avatarRef.current.speak({ taskRequest: { text: dialog, sessionId: sessionDataRef.current?.sessionId } })
-				} catch (error) {
-					console.error(error)
-				}
-				setIsSpeaking?.(false)
-			},
-			interrupt: async () => {
-				if (!initializedRef.current || !avatarRef.current) {
-					console.debug(`Avatar API not initialized`)
-					return
-				}
-				try {
-					await avatarRef.current.interrupt({ interruptRequest: { sessionId: sessionDataRef.current?.sessionId } })
-				} catch (error) {
-					console.error(error)
-				}
-				setIsSpeaking?.(false)
-			},
-		}),
-		[setIsSpeaking],
-	)
-
+	// attatch the stream to the video element
 	useEffect(() => {
 		if (stream && videoRef.current) {
 			videoRef.current.onloadedmetadata = () => {
@@ -139,11 +124,28 @@ export default forwardRef<HeyGenAvatarStreamHandle, HeyGenAvatarStreamProps>(fun
 			}
 			videoRef.current.srcObject = stream
 		}
-	}, [videoRef, stream])
+	}, [stream])
+
+	useImperativeHandle(
+		ref,
+		() => ({
+			speak: async (dialog: string) => {
+				if (!avatarRef.current) return
+				setIsLoadingRepeat(true)
+				await avatarRef.current.speak({ text: dialog, task_type: TaskType.REPEAT })
+				setIsLoadingRepeat(false)
+			},
+			interrupt: async () => {
+				if (!avatarRef.current) return
+				await avatarRef.current.interrupt()
+			},
+		}),
+		[],
+	)
 
 	return (
 		<div>
-			{isLoading ? (
+			{isLoadingSession ? (
 				<CircularProgress color="primary" />
 			) : (
 				<video
