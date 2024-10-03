@@ -1,7 +1,7 @@
 import { Box, Card, CardActions, CardContent, Divider } from '@mui/material'
 import Stack from '@mui/material/Stack'
 import { useAssistant } from 'ai/react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChatBox } from './ChatBox'
 import HeyGenAvatarControls, { HeyGenAvatarControlsProps, HeyGenAvatarControlsValue } from './HeyGenAvatarControls'
 import HeyGenAvatarStream, { HeyGenAvatarStreamHandle } from './HeyGenAvatarStream'
@@ -9,12 +9,43 @@ import HeyGenAvatarStream, { HeyGenAvatarStreamHandle } from './HeyGenAvatarStre
 export default function InteractiveAvatar() {
 	const [isStreaming, setIsStreaming] = useState<HeyGenAvatarControlsProps['isStreaming']>(false)
 	const [isSpeaking, setIsSpeaking] = useState<boolean>(false)
-	const [avatarControlsValue, setAvatarControlsValue] = useState<HeyGenAvatarControlsValue>()
+	const [avatarControlsValue, setAvatarControlsValue] = useState<HeyGenAvatarControlsValue>({
+		avatarId: '',
+		voiceId: '',
+	})
 	const avatarStreamRef = useRef<HeyGenAvatarStreamHandle>(null)
 	const { status, messages, append } = useAssistant({ api: '/api/assistant' })
 
+	const messageCountRef = useRef<number>(0)
+
+	// collect any new messages from the assistant and speak them
+	useEffect(() => {
+		if (status === 'awaiting_message') {
+			const newMessages = messages.slice(messageCountRef.current)
+			const newDialog = newMessages
+				.filter((message) => message.role === 'assistant')
+				.map((message) => message.content)
+				.join('\n')
+
+			if (newDialog) {
+				void avatarStreamRef.current?.speak(newDialog)
+			}
+			messageCountRef.current = messages.length
+		}
+	}, [status, messages])
+
 	return (
 		<Stack direction="row" m={4} spacing={4} justifyItems="stretch">
+			<Box sx={{ width: '50%' }}>
+				<HeyGenAvatarStream
+					ref={avatarStreamRef}
+					avatarId={avatarControlsValue.avatarId}
+					voiceId={avatarControlsValue.voiceId}
+					isStreaming={isStreaming}
+					setIsSpeaking={setIsSpeaking}
+				/>
+			</Box>
+
 			<Card sx={{ width: '50%' }}>
 				<CardContent>
 					<HeyGenAvatarControls
@@ -35,26 +66,11 @@ export default function InteractiveAvatar() {
 								role: 'user',
 								content: value,
 							})
-
-							// chat.send(completedTranscription).then((messages) => {
-							// 	avatarStreamRef.current?.speak(messages.join('\n'))
-							// 	setAvatarResponses(messages)
-							// })
 						}}
 						disabled={isSpeaking}
 					/>
 				</CardActions>
 			</Card>
-
-			<Box sx={{ width: '50%' }}>
-				<HeyGenAvatarStream
-					ref={avatarStreamRef}
-					avatarId={avatarControlsValue?.avatarId}
-					voiceId={avatarControlsValue?.voiceId}
-					isStreaming={isStreaming}
-					setIsSpeaking={setIsSpeaking}
-				/>
-			</Box>
 		</Stack>
 	)
 }

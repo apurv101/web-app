@@ -59,7 +59,7 @@ export default forwardRef<HeyGenAvatarStreamHandle, HeyGenAvatarStreamProps>(fun
 				sessionDataRef.current = await avatarRef.current.createStartAvatar(
 					{
 						newSessionRequest: {
-							quality: 'low',
+							quality: 'high',
 							avatarName: avatarId,
 							voice: { voiceId },
 						},

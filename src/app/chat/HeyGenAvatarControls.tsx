@@ -1,12 +1,14 @@
 import { Button, TextField } from '@mui/material'
-import Autocomplete, { AutocompleteValue } from '@mui/material/Autocomplete'
+import Autocomplete from '@mui/material/Autocomplete'
 import Stack from '@mui/material/Stack'
 import { Dispatch, RefObject, SetStateAction } from 'react'
 import { HeyGenAvatarStreamHandle } from './HeyGenAvatarStream'
 
-type AutocompleteState = AutocompleteValue<{ id: string; label: string }, false, false, true>
-
 const AVATARS = [
+	{
+		avatar_id: 'Kayla-insweater-20220818',
+		name: 'Kayla in Brown sweater',
+	},
 	{
 		avatar_id: 'Eric_public_pro2_20230608',
 		name: 'Edward in Blue Shirt',
@@ -30,14 +32,11 @@ const AVATARS = [
 ]
 
 const AVATAR_MAP = AVATARS.reduce((acc, avatar) => {
-	acc.set(avatar.avatar_id, {
-		id: avatar.avatar_id,
-		label: avatar.name,
-	})
+	acc.set(avatar.avatar_id, avatar.name)
 	return acc
-}, new Map<string, AutocompleteState>())
+}, new Map<string, string>())
 
-const AVATAR_OPTIONS = Array.from(AVATAR_MAP.values())
+const AVATAR_OPTIONS = Array.from(AVATAR_MAP.keys())
 
 const VOICES = [
 	{
@@ -142,14 +141,11 @@ const VOICES = [
 ]
 
 const VOICE_MAP = VOICES.reduce((acc, voice) => {
-	acc.set(voice.voice_id, {
-		id: voice.voice_id,
-		label: `${voice.name} | ${voice.language} | ${voice.gender}`,
-	})
+	acc.set(voice.voice_id, `${voice.name} | ${voice.language} | ${voice.gender}`)
 	return acc
-}, new Map<string, AutocompleteState>())
+}, new Map<string, string>())
 
-const VOICE_OPTIONS = Array.from(VOICE_MAP.values())
+const VOICE_OPTIONS = Array.from(VOICE_MAP.keys())
 
 export type HeyGenAvatarControlsValue = {
 	avatarId?: string
@@ -159,7 +155,7 @@ export type HeyGenAvatarControlsValue = {
 export type HeyGenAvatarControlsProps = {
 	avatarStreamRef: RefObject<HeyGenAvatarStreamHandle>
 	value?: HeyGenAvatarControlsValue
-	onChange?: Dispatch<SetStateAction<HeyGenAvatarControlsProps['value']>>
+	onChange?: Dispatch<SetStateAction<HeyGenAvatarControlsValue>>
 	isStreaming?: boolean
 	setIsStreaming?: Dispatch<SetStateAction<HeyGenAvatarControlsProps['isStreaming']>>
 }
@@ -178,7 +174,7 @@ export default function HeyGenAvatarControls({
 					fullWidth
 					id="avatarIdField"
 					freeSolo
-					value={AVATAR_MAP.get(value?.avatarId ?? '') ?? value}
+					value={value?.avatarId}
 					onChange={(_event, newAvatarId) => {
 						onChange?.((value) =>
 							Object.assign({}, value, {
@@ -187,6 +183,7 @@ export default function HeyGenAvatarControls({
 						)
 					}}
 					options={AVATAR_OPTIONS}
+					getOptionLabel={(option) => AVATAR_MAP.get(option) ?? option}
 					renderInput={(params) => (
 						<TextField
 							{...params}
@@ -203,7 +200,7 @@ export default function HeyGenAvatarControls({
 					fullWidth
 					id="voiceIdField"
 					freeSolo
-					value={VOICE_MAP.get(value?.voiceId ?? '') ?? value}
+					value={value?.voiceId}
 					onChange={(_event, newVoiceId) => {
 						onChange?.((value) =>
 							Object.assign({}, value, {
@@ -212,6 +209,7 @@ export default function HeyGenAvatarControls({
 						)
 					}}
 					options={VOICE_OPTIONS}
+					getOptionLabel={(option) => VOICE_MAP.get(option) ?? option}
 					renderInput={(params) => (
 						<TextField
 							{...params}
