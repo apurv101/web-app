@@ -29,9 +29,8 @@ export default tseslint.config(
 	{
 		files: ['**/*.{ts,tsx}'],
 		extends: [
-			...mapName('TypeScript-recommended', tseslint.configs.recommended),
-			// ...mapName('TypeScript-strict', tseslint.configs.strictTypeChecked),
-			// ...mapName('TypeScript-stylistic', tseslint.configs.stylisticTypeChecked),
+			...mapName('TypeScript-strict', tseslint.configs.strictTypeChecked),
+			...mapName('TypeScript-stylistic', tseslint.configs.stylisticTypeChecked),
 		],
 		languageOptions: {
 			parserOptions: {
@@ -40,8 +39,8 @@ export default tseslint.config(
 			},
 		},
 		rules: {
-			// '@typescript-eslint/no-unsafe-assignment': 'off',
-			// '@typescript-eslint/no-unsafe-member-access': 'off',
+			'@typescript-eslint/no-unsafe-assignment': 'warn',
+			'@typescript-eslint/no-unsafe-member-access': 'warn',
 			'@typescript-eslint/no-unused-vars': [
 				'error',
 				{
@@ -54,31 +53,9 @@ export default tseslint.config(
 					ignoreRestSiblings: true,
 				},
 			],
+			'@typescript-eslint/consistent-type-definitions': ['error', 'type'],
 		},
 	},
-	// TODO determine if we should re-add the custom rules
-	// {
-	// 	rules: {
-	// 		'no-empty': [
-	// 			'error',
-	// 			{
-	// 				allowEmptyCatch: true,
-	// 			},
-	// 		],
-	// 		'@typescript-eslint/no-unused-vars': [
-	// 			'error',
-	// 			{
-	// 				args: 'all',
-	// 				argsIgnorePattern: '^_',
-	// 				caughtErrors: 'all',
-	// 				caughtErrorsIgnorePattern: '^_',
-	// 				destructuredArrayIgnorePattern: '^_',
-	// 				varsIgnorePattern: '^_',
-	// 				ignoreRestSiblings: true,
-	// 			},
-	// 		],
-	// 	},
-	// },
 	{
 		name: 'React',
 		files: ['**/*.{js,mjs,cjs,jsx,mjsx,ts,tsx,mtsx}'],
@@ -86,6 +63,11 @@ export default tseslint.config(
 			reactPlugin.configs.flat.recommended,
 			reactPlugin.configs.flat['jsx-runtime'], // for React 17+
 		],
+		settings: {
+			react: {
+				version: 'detect',
+			},
+		},
 		languageOptions: {
 			...reactPlugin.configs.flat.recommended.languageOptions,
 			globals: {
