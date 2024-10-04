@@ -3,11 +3,11 @@ import Stack from '@mui/material/Stack'
 import { useAssistant } from 'ai/react'
 import { useEffect, useRef, useState } from 'react'
 import { ChatBox } from './ChatBox'
-import HeyGenAvatarControls, { HeyGenAvatarControlsProps, HeyGenAvatarControlsValue } from './HeyGenAvatarControls'
+import HeyGenAvatarControls, { HeyGenAvatarControlsValue } from './HeyGenAvatarControls'
 import HeyGenAvatarStream, { HeyGenAvatarStreamHandle } from './HeyGenAvatarStream'
 
 export default function InteractiveAvatar() {
-	const [isStreaming, setIsStreaming] = useState<HeyGenAvatarControlsProps['isStreaming']>(false)
+	const [isStreaming, setIsStreaming] = useState<boolean>(false)
 	const [isAvatarTalking, setIsAvatarTalking] = useState<boolean>(false)
 	const [avatarControlsValue, setAvatarControlsValue] = useState<HeyGenAvatarControlsValue>({
 		avatarId: '',
@@ -42,6 +42,7 @@ export default function InteractiveAvatar() {
 					avatarId={avatarControlsValue.avatarId}
 					voiceId={avatarControlsValue.voiceId}
 					isStreaming={isStreaming}
+					setIsStreaming={setIsStreaming}
 					setIsAvatarTalking={setIsAvatarTalking}
 				/>
 			</Box>

@@ -157,7 +157,7 @@ export type HeyGenAvatarControlsProps = {
 	value?: HeyGenAvatarControlsValue
 	onChange?: Dispatch<SetStateAction<HeyGenAvatarControlsValue>>
 	isStreaming?: boolean
-	setIsStreaming?: Dispatch<SetStateAction<HeyGenAvatarControlsProps['isStreaming']>>
+	setIsStreaming?: Dispatch<SetStateAction<boolean>>
 }
 
 export default function HeyGenAvatarControls({

@@ -1,6 +1,5 @@
 import { getAvatarStreamToken } from '@/app/api/getAvatarStreamToken'
 import StreamingAvatar, { AvatarQuality, StreamingEvents, TaskType, VoiceEmotion } from '@heygen/streaming-avatar'
-// import { Configuration, NewSessionData, StreamingAvatar } from '@heygen/streaming-avatar'
 import { CircularProgress } from '@mui/material'
 import {
 	Dispatch,
@@ -12,6 +11,7 @@ import {
 	useRef,
 	useState,
 } from 'react'
+import ChromaKeyVideo, { ChromeKeyVideoHandle } from './ChromaKeyVideo'
 
 export type HeyGenAvatarStreamHandle = {
 	speak: (dialog: string) => Promise<void>
@@ -22,26 +22,27 @@ export type HeyGenAvatarStreamProps = {
 	avatarId?: string
 	voiceId?: string
 	isStreaming?: boolean
+	setIsStreaming?: Dispatch<SetStateAction<boolean>>
 	setIsAvatarTalking?: Dispatch<SetStateAction<boolean>>
 	setIsUserTalking?: Dispatch<SetStateAction<boolean>>
 }
 
 export default forwardRef<HeyGenAvatarStreamHandle, HeyGenAvatarStreamProps>(function HeyGenAvatarStream(
-	{ avatarId, voiceId, isStreaming, setIsAvatarTalking, setIsUserTalking }: HeyGenAvatarStreamProps,
+	{ avatarId, voiceId, isStreaming, setIsStreaming, setIsAvatarTalking, setIsUserTalking }: HeyGenAvatarStreamProps,
 	ref,
 ) {
 	const [isLoadingSession, setIsLoadingSession] = useState(false)
 	const [_isLoadingRepeat, setIsLoadingRepeat] = useState(false)
-	const [stream, setStream] = useState<MediaStream>()
+	const [stream, setStream] = useState<MediaStream | null>(null)
 
-	const videoRef = useRef<HTMLVideoElement>(null)
+	const chromaKeyVideoRef = useRef<ChromeKeyVideoHandle>(null)
 	const avatarRef = useRef<StreamingAvatar | null>(null)
 
 	// TODO correctly restart session when avatarId or voiceId change
 
 	const endSession = useCallback(async () => {
 		await avatarRef.current?.stopAvatar()
-		setStream(undefined)
+		setStream(null)
 	}, [])
 
 	const startSession = useCallback(async () => {
@@ -106,7 +107,9 @@ export default forwardRef<HeyGenAvatarStreamHandle, HeyGenAvatarStreamProps>(fun
 	// stop stream on dismount
 	useEffect(() => {
 		if (isStreaming) {
-			void startSession()
+			void startSession().catch(() => {
+				setIsStreaming?.(false)
+			})
 		} else {
 			void endSession()
 		}
@@ -114,16 +117,11 @@ export default forwardRef<HeyGenAvatarStreamHandle, HeyGenAvatarStreamProps>(fun
 		return () => {
 			void endSession()
 		}
-	}, [isStreaming, startSession, endSession])
+	}, [isStreaming, setIsStreaming, startSession, endSession])
 
 	// attatch the stream to the video element
 	useEffect(() => {
-		if (stream && videoRef.current) {
-			videoRef.current.onloadedmetadata = () => {
-				void videoRef.current?.play()
-			}
-			videoRef.current.srcObject = stream
-		}
+		chromaKeyVideoRef.current?.setStream(stream)
 	}, [stream])
 
 	useImperativeHandle(
@@ -148,8 +146,8 @@ export default forwardRef<HeyGenAvatarStreamHandle, HeyGenAvatarStreamProps>(fun
 			{isLoadingSession ? (
 				<CircularProgress color="primary" />
 			) : (
-				<video
-					ref={videoRef}
+				<ChromaKeyVideo
+					ref={chromaKeyVideoRef}
 					autoPlay
 					playsInline
 					style={{
@@ -157,9 +155,7 @@ export default forwardRef<HeyGenAvatarStreamHandle, HeyGenAvatarStreamProps>(fun
 						height: '100%',
 						objectFit: 'contain',
 					}}
-				>
-					<track kind="captions" />
-				</video>
+				></ChromaKeyVideo>
 			)}
 		</div>
 	)
