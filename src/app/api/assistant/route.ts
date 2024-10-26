@@ -1,6 +1,7 @@
 import { AssistantResponse } from 'ai'
 import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
+import { RunSubmitToolOutputsParams } from 'openai/resources/beta/threads/index.mjs'
 
 const assistant_id = 'asst_anboc2BrNkdQA0i99cxng2ai'
 
@@ -37,7 +38,7 @@ export async function POST(req: Request) {
 
 	return AssistantResponse(
 		{ threadId, messageId: createdMessage.id },
-		async ({ forwardStream, sendDataMessage: _sendDataMessage, sendMessage: _sendMessage }) => {
+		async ({ forwardStream, sendDataMessage, sendMessage: _sendMessage }) => {
 			// Run the assistant on the thread
 			const runStream = openai.beta.threads.runs.stream(threadId, {
 				assistant_id,
@@ -48,16 +49,34 @@ export async function POST(req: Request) {
 
 			// status can be: queued, in_progress, requires_action, cancelling, cancelled, failed, completed, or expired
 			while (runResult?.status === 'requires_action' && runResult.required_action?.type === 'submit_tool_outputs') {
-				const tool_outputs = runResult.required_action.submit_tool_outputs.tool_calls.map((toolCall) => {
-					const _parameters: unknown = JSON.parse(toolCall.function.arguments)
+				const tool_outputs: RunSubmitToolOutputsParams.ToolOutput[] = []
+				for (const toolCall of runResult.required_action.submit_tool_outputs.tool_calls) {
+					// const parameters: unknown = JSON.parse(toolCall.function.arguments)
 
 					switch (toolCall.function.name) {
 						// configure your tool calls here
 
+						case 'perform_task': {
+							// render the actual task being performed on the UI
+							sendDataMessage({
+								id: toolCall.id,
+								role: 'data',
+								data: { toolCall: 'perform_task', arguments: toolCall.function.arguments },
+							})
+							// submit the task
+							const output = await performTask(toolCall.function.arguments)
+							// return the results
+							tool_outputs.push({
+								output: JSON.stringify(output),
+								tool_call_id: toolCall.id,
+							})
+							break
+						}
+
 						default:
 							throw new Error(`Unknown tool call function: ${toolCall.function.name}`)
 					}
-				})
+				}
 
 				runResult = await forwardStream(
 					openai.beta.threads.runs.submitToolOutputsStream(threadId, runResult.id, { tool_outputs }),
@@ -76,4 +95,67 @@ type ValidRequest = {
 function isValidRequest(req: any): req is ValidRequest {
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 	return (req?.threadId === null || typeof req?.threadId === 'string') && typeof req?.message === 'string'
+}
+
+async function performTask(parameters: string) {
+	return new Promise((resolve, reject) => {
+		try {
+			const websocket = new WebSocket('ws://localhost:8765')
+			websocket.onopen = () => {
+				// init connection
+				websocket.send(
+					JSON.stringify({
+						type: 'init',
+						token: 'webapp-1234',
+					}),
+				)
+				// send task
+				websocket.send(parameters)
+			}
+			websocket.onmessage = (event) => {
+				if (typeof event.data !== 'string') {
+					reject(new Error(`Invalid message from websocket; expected a string, got: ${String(event.data)}`))
+					websocket.close(1007)
+					return
+				}
+
+				const message: unknown = JSON.parse(event.data)
+
+				if (!isValidMessage(message)) {
+					reject(
+						new Error(`Invalid message from websocket; expected a ValidMessage object, got: ${String(event.data)}`),
+					)
+					websocket.close(1007)
+				} else if (message.type === 'status') {
+					resolve(JSON.stringify({ success: message.success }))
+					websocket.close(1000)
+				} else {
+					console.error(`Error sent from websocket: ${message.message}`)
+				}
+			}
+		} catch (error) {
+			reject(new Error(`Error connecting to websocket: ${String(error)}`))
+		}
+	})
+}
+
+type ValidMessage = ValidStatusMessage | ValidErrorMessage
+
+type ValidStatusMessage = {
+	type: 'status'
+	success: boolean
+}
+
+type ValidErrorMessage = {
+	type: 'error'
+	message: string
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isValidMessage(msg: any): msg is ValidMessage {
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+	const isStatusMessage = msg?.type === 'status' && typeof msg?.success === 'boolean'
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+	const isErrorMessage = msg?.type === 'error' && typeof msg?.message === 'string'
+	return isStatusMessage || isErrorMessage
 }
