@@ -6,10 +6,6 @@ import { HeyGenAvatarStreamHandle } from './HeyGenAvatarStream'
 
 const AVATARS = [
 	{
-		avatar_id: 'Kayla-insweater-20220818',
-		name: 'Kayla in Brown sweater',
-	},
-	{
 		avatar_id: 'Eric_public_pro2_20230608',
 		name: 'Edward in Blue Shirt',
 	},
