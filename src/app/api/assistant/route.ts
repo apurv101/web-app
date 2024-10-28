@@ -53,28 +53,37 @@ export async function POST(req: Request) {
 				for (const toolCall of runResult.required_action.submit_tool_outputs.tool_calls) {
 					// const parameters: unknown = JSON.parse(toolCall.function.arguments)
 
-					switch (toolCall.function.name) {
-						// configure your tool calls here
+					console.debug('ToolCall:', JSON.stringify(toolCall, null, 2))
+					try {
+						switch (toolCall.function.name) {
+							case 'perform_task': {
+								// render the actual task being performed on the UI
+								sendDataMessage({
+									id: toolCall.id,
+									role: 'data',
+									data: { toolCall: 'perform_task', arguments: toolCall.function.arguments },
+								})
+								// submit the task
+								const output = await performTask(toolCall.function.arguments)
+								// return the results
+								tool_outputs.push({
+									output: JSON.stringify(output),
+									tool_call_id: toolCall.id,
+								})
 
-						case 'perform_task': {
-							// render the actual task being performed on the UI
-							sendDataMessage({
-								id: toolCall.id,
-								role: 'data',
-								data: { toolCall: 'perform_task', arguments: toolCall.function.arguments },
-							})
-							// submit the task
-							const output = await performTask(toolCall.function.arguments)
-							// return the results
-							tool_outputs.push({
-								output: JSON.stringify(output),
-								tool_call_id: toolCall.id,
-							})
-							break
+								break
+							}
+
+							default:
+								throw new Error(`Unknown tool call function: ${toolCall.function.name}`)
 						}
-
-						default:
-							throw new Error(`Unknown tool call function: ${toolCall.function.name}`)
+					} catch (error) {
+						tool_outputs.push({
+							output: JSON.stringify({ success: false, error: error }),
+							tool_call_id: toolCall.id,
+						})
+					} finally {
+						console.debug('ToolCall output:', JSON.stringify(tool_outputs[tool_outputs.length - 1], null, 2))
 					}
 				}
 
@@ -101,7 +110,8 @@ async function performTask(parameters: string) {
 	return new Promise((resolve, reject) => {
 		try {
 			const websocket = new WebSocket('ws://localhost:8765')
-			websocket.onopen = () => {
+			websocket.onopen = (event) => {
+				console.debug('Websocket opened:', event)
 				// init connection
 				websocket.send(
 					JSON.stringify({
@@ -113,6 +123,7 @@ async function performTask(parameters: string) {
 				websocket.send(parameters)
 			}
 			websocket.onmessage = (event) => {
+				console.debug('Websocket message:', event)
 				if (typeof event.data !== 'string') {
 					reject(new Error(`Invalid message from websocket; expected a string, got: ${String(event.data)}`))
 					websocket.close(1007)
@@ -131,10 +142,23 @@ async function performTask(parameters: string) {
 					websocket.close(1000)
 				} else {
 					console.error(`Error sent from websocket: ${message.message}`)
+					reject(new Error(`Error sent from websocket: ${message.message}`))
 				}
 			}
+			websocket.onerror = (event) => {
+				console.error('Websocket error:', event)
+				const symbols = Object.getOwnPropertySymbols(event)
+				const messageSymbol = symbols.find((symbol) => symbol.description === 'kMessage')
+				const message = messageSymbol ? (event[messageSymbol as unknown as keyof Event] as string) : 'Unknown'
+				reject(new Error(`Error connecting to websocket: ${message}`))
+			}
+			websocket.onclose = (event) => {
+				console.debug(`Websocket closed: code ${String(event.code)}`)
+				reject(new Error(`Websocket closed: code ${String(event.code)}`))
+			}
 		} catch (error) {
-			reject(new Error(`Error connecting to websocket: ${String(error)}`))
+			console.error(`Error creating websocket: ${String(error)}`)
+			reject(new Error(`Error creating websocket: ${String(error)}`))
 		}
 	})
 }
