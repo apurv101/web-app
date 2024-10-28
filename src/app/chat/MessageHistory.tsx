@@ -1,4 +1,5 @@
 import aimyableIcon from '@/../public/aimyable-icon.svg'
+import Markdown from '@/components/Markdown'
 import { Avatar, Box, Card, Stack, Typography } from '@mui/material'
 import { CreateMessage, Message } from 'ai'
 import { StaticImageData } from 'next/image'
@@ -52,8 +53,10 @@ export default function MessageHistory({ messages }: MessageHistoryProps) {
 										borderRadius: '10px',
 									}}
 								>
-									{m.role !== 'data' ? (
+									{m.role === 'user' ? (
 										m.content
+									) : m.role === 'assistant' ? (
+										<Markdown content={m.content} />
 									) : (
 										// TODO handle data responses more gracefully
 										<pre className={'bg-gray-200'}>{JSON.stringify(m.data, null, 2)}</pre>
